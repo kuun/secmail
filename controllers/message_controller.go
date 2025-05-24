@@ -187,3 +187,49 @@ func GetAttachment(c *gin.Context) {
 	c.Header("Content-Type", attachment.ContentType)
 	c.Data(http.StatusOK, attachment.ContentType, attachment.Data)
 }
+
+func DeleteMessage(c *gin.Context) {
+	db := c.MustGet("db").(*gorm.DB)
+
+	// Parse message ID
+	messageID, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid message ID"})
+		return
+	}
+
+	// Start transaction
+	tx := db.Begin()
+
+	// Get message and check email expiration in one query
+	var message models.Message
+	if err := tx.Joins("JOIN email_addresses ON email_addresses.id = messages.email_id").
+		Where("messages.id = ? AND email_addresses.expires_at > ?", messageID, time.Now()).
+		First(&message).Error; err != nil {
+		tx.Rollback()
+		if err == gorm.ErrRecordNotFound {
+			c.JSON(http.StatusGone, gin.H{"error": "Message not found or email expired"})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Database error"})
+		return
+	}
+	// Delete message and associated attachments
+	if err := tx.Where("message_id = ?", messageID).Delete(&models.Attachment{}).Error; err != nil {
+		tx.Rollback()
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete attachments"})
+		return
+	}
+	if err := tx.Delete(&message).Error; err != nil {
+		tx.Rollback()
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete message"})
+		return
+	}
+
+	if err := tx.Commit().Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to commit transaction"})
+		return
+	}
+
+	c.Status(http.StatusNoContent)
+}

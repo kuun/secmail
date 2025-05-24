@@ -253,3 +253,104 @@ func TestGetAttachment(t *testing.T) {
 		})
 	}
 }
+
+func TestDeleteMessage(t *testing.T) {
+	tests := []struct {
+		name         string
+		messageID    string
+		setupDB      func(*gorm.DB) *models.Message
+		expectedCode int
+		validate     func(*testing.T, *httptest.ResponseRecorder, *gorm.DB)
+	}{
+		{
+			name:      "Success",
+			messageID: "123e4567-e89b-12d3-a456-426614174000",
+			setupDB: func(db *gorm.DB) *models.Message {
+				email := models.EmailAddress{
+					Address:   "test123456@test.com",
+					ExpiresAt: time.Now().Add(time.Hour),
+				}
+				db.Create(&email)
+
+				msg := models.Message{
+					ID:      uuid.MustParse("123e4567-e89b-12d3-a456-426614174000"),
+					EmailID: email.ID,
+					From:    "sender@example.com",
+				}
+				db.Create(&msg)
+
+				att := models.Attachment{
+					ID:        uuid.New(),
+					MessageID: msg.ID,
+					FileName:  "test.txt",
+				}
+				db.Create(&att)
+				return &msg
+			},
+			expectedCode: http.StatusNoContent,
+			validate: func(t *testing.T, w *httptest.ResponseRecorder, db *gorm.DB) {
+				// Verify message was deleted
+				var count int64
+				db.Model(&models.Message{}).Count(&count)
+				assert.Equal(t, int64(0), count)
+
+				// Verify attachments were deleted
+				db.Model(&models.Attachment{}).Count(&count)
+				assert.Equal(t, int64(0), count)
+			},
+		},
+		{
+			name:      "Invalid UUID",
+			messageID: "invalid-uuid",
+			setupDB: func(db *gorm.DB) *models.Message {
+				return nil
+			},
+			expectedCode: http.StatusBadRequest,
+			validate: func(t *testing.T, w *httptest.ResponseRecorder, db *gorm.DB) {
+				var response map[string]string
+				json.Unmarshal(w.Body.Bytes(), &response)
+				assert.Contains(t, response["error"], "Invalid message ID")
+			},
+		},
+		{
+			name:      "Expired Email",
+			messageID: "123e4567-e89b-12d3-a456-426614174000",
+			setupDB: func(db *gorm.DB) *models.Message {
+				email := models.EmailAddress{
+					Address:   "expired@test.com",
+					ExpiresAt: time.Now().Add(-time.Hour),
+				}
+				db.Create(&email)
+
+				msg := models.Message{
+					ID:      uuid.MustParse("123e4567-e89b-12d3-a456-426614174000"),
+					EmailID: email.ID,
+				}
+				db.Create(&msg)
+				return &msg
+			},
+			expectedCode: http.StatusGone,
+			validate: func(t *testing.T, w *httptest.ResponseRecorder, db *gorm.DB) {
+				var response map[string]string
+				json.Unmarshal(w.Body.Bytes(), &response)
+				assert.Contains(t, response["error"], "Message not found or email expired")
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			db := setupTestDB(t)
+			tt.setupDB(db)
+			router := setupTestRouter(db)
+			router.DELETE("/message/:id", DeleteMessage)
+
+			w := httptest.NewRecorder()
+			req := httptest.NewRequest("DELETE", "/message/"+tt.messageID, nil)
+			router.ServeHTTP(w, req)
+
+			assert.Equal(t, tt.expectedCode, w.Code)
+			tt.validate(t, w, db)
+		})
+	}
+}
