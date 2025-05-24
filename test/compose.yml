@@ -1,0 +1,13 @@
+services:
+  db:
+    image: library/postgres
+    restart: always
+    environment:
+      POSTGRES_USER: "secmail"
+      POSTGRES_PASSWORD: "sec@mail"
+      POSTGRES_DB: "secmail"
+    ports:
+      - "5432:5432"
+    volumes:
+        - ./data:/var/lib/postgresql/data
+
