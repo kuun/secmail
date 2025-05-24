@@ -17,6 +17,7 @@ export const useEmailStore = defineStore('email', {
     expiresAt: null as Date | null,
     messages: [] as Message[],
     selectedMessage: null as Message | null,
+    view: 'create' as 'create' | 'inbox'
   }),
 
   actions: {
@@ -29,8 +30,13 @@ export const useEmailStore = defineStore('email', {
 
     async refreshMessages() {
       if (!this.address) return
-      const response = await axios.get(`/api/email/${this.address}/messages`)
-      this.messages = response.data
+      try {
+        const response = await fetch(`/api/email/${this.address}/messages`)
+        const data = await response.json()
+        this.messages = data.messages
+      } catch (error) {
+        console.error('Failed to fetch messages:', error)
+      }
     },
 
     async selectMessage(messageId: number) {
@@ -45,6 +51,15 @@ export const useEmailStore = defineStore('email', {
       this.expiresAt = null
       this.messages = []
       this.selectedMessage = null
-    }
+    },
+
+    showInbox() {
+      this.view = 'inbox'
+      this.refreshMessages()
+    },
+
+    showCreate() {
+      this.view = 'create'
+    },
   }
 })

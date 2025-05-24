@@ -36,7 +36,7 @@
         </div>
 
         <div class="flex justify-between items-center">
-          <button @click="emailStore.refreshMessages"
+          <button @click="router.push({ name: 'inbox' })"
             class="text-blue-600 hover:text-blue-800 px-4 py-2 rounded-md border border-blue-200 hover:bg-blue-50">
             <span>Goto Inbox</span>
           </button>
@@ -52,10 +52,12 @@
 
 <script setup lang="ts">
 import { ref, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import { useEmailStore } from '../stores/email'
 import { ClipboardIcon } from '@heroicons/vue/24/solid'
 
 const emailStore = useEmailStore()
+const router = useRouter()
 const showNotification = ref(false)
 const notificationMessage = ref('')
 
