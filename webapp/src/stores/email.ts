@@ -13,7 +13,7 @@ interface Message {
 
 export const useEmailStore = defineStore('email', {
   state: () => ({
-    emailAddress: '',
+    address: '',
     expiresAt: null as Date | null,
     messages: [] as Message[],
     selectedMessage: null as Message | null,
@@ -22,14 +22,14 @@ export const useEmailStore = defineStore('email', {
   actions: {
     async generateEmail() {
       const response = await axios.post('/api/email')
-      this.emailAddress = response.data.emailAddress
+      this.address = response.data.address
       this.expiresAt = new Date(response.data.expiresAt)
       this.messages = []
     },
 
     async refreshMessages() {
-      if (!this.emailAddress) return
-      const response = await axios.get(`/api/email/${this.emailAddress}/messages`)
+      if (!this.address) return
+      const response = await axios.get(`/api/email/${this.address}/messages`)
       this.messages = response.data
     },
 
@@ -39,9 +39,9 @@ export const useEmailStore = defineStore('email', {
     },
 
     async deleteEmail() {
-      if (!this.emailAddress) return
-      await axios.delete(`/api/email/${this.emailAddress}`)
-      this.emailAddress = ''
+      if (!this.address) return
+      await axios.delete(`/api/email/${this.address}`)
+      this.address = ''
       this.expiresAt = null
       this.messages = []
       this.selectedMessage = null
