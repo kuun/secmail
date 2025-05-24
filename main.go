@@ -22,7 +22,7 @@ func main() {
 	}
 
 	// Auto migrate models
-	db.AutoMigrate(&models.TempEmail{}, &models.Message{}, &models.Attachment{})
+	db.AutoMigrate(&models.EmailAddress{}, &models.Message{}, &models.Attachment{})
 
 	r := gin.Default()
 

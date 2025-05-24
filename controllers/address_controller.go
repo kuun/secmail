@@ -26,8 +26,8 @@ func getEmailPattern() string {
 }
 
 type CreateEmailResponse struct {
-	EmailAddress string    `json:"emailAddress"`
-	ExpiresAt    time.Time `json:"expiresAt"`
+	Address   string    `json:"address"`
+	ExpiresAt time.Time `json:"expiresAt"`
 }
 
 func generateRandomString(length int) string {
@@ -48,7 +48,7 @@ func CreateTempEmail(c *gin.Context) {
 	db := c.MustGet("db").(*gorm.DB)
 
 	// Generate random email address
-	var email models.TempEmail
+	var email models.EmailAddress
 	var exists bool
 
 	// Keep generating until we find an unused address
@@ -58,9 +58,9 @@ func CreateTempEmail(c *gin.Context) {
 
 		exists = db.Where("email_address = ?", emailAddress).First(&email).Error == nil
 		if !exists {
-			email = models.TempEmail{
-				EmailAddress: emailAddress,
-				ExpiresAt:    time.Now().Add(emailLifespan),
+			email = models.EmailAddress{
+				Address:   emailAddress,
+				ExpiresAt: time.Now().Add(emailLifespan),
 			}
 			break
 		}
@@ -74,8 +74,8 @@ func CreateTempEmail(c *gin.Context) {
 
 	// Return response
 	c.JSON(http.StatusCreated, CreateEmailResponse{
-		EmailAddress: email.EmailAddress,
-		ExpiresAt:    email.ExpiresAt,
+		Address:   email.Address,
+		ExpiresAt: email.ExpiresAt,
 	})
 }
 
@@ -89,7 +89,7 @@ func GetTempEmail(c *gin.Context) {
 		return
 	}
 
-	var email models.TempEmail
+	var email models.EmailAddress
 	if err := db.Where("email_address = ?", emailAddress).First(&email).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			c.JSON(http.StatusNotFound, gin.H{"error": "Email address not found"})
@@ -122,7 +122,7 @@ func DeleteTempEmail(c *gin.Context) {
 	tx := db.Begin()
 
 	// Find email
-	var email models.TempEmail
+	var email models.EmailAddress
 	if err := tx.Where("email_address = ?", emailAddress).First(&email).Error; err != nil {
 		tx.Rollback()
 		if err == gorm.ErrRecordNotFound {

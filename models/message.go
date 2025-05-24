@@ -9,7 +9,7 @@ import (
 
 type Message struct {
 	ID          uuid.UUID `gorm:"type:uuid;primary_key"`
-	TempEmailID uint
+	EmailID     uint
 	From        string
 	Subject     string
 	Content     string
@@ -17,14 +17,13 @@ type Message struct {
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
 	DeletedAt   gorm.DeletedAt `gorm:"index"`
-	Attachments []Attachment
+	Attachments []Attachment   `gorm:"foreignKey:MessageID"`
 }
 
 type Attachment struct {
 	gorm.Model
 	ID          uuid.UUID `gorm:"type:uuid;primary_key"`
-	TempEmailID uint
-	MessageID   uint
+	MessageID   uuid.UUID
 	FileName    string
 	ContentType string
 	Data        []byte

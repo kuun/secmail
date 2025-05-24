@@ -56,8 +56,8 @@ func GetMessages(c *gin.Context) {
 	offset := (page - 1) * pageSize
 
 	// Check if email exists and not expired
-	var email models.TempEmail
-	if err := db.Where("email_address = ?", emailAddress).First(&email).Error; err != nil {
+	var email models.EmailAddress
+	if err := db.Where("address = ?", emailAddress).First(&email).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			c.JSON(http.StatusNotFound, gin.H{"error": "Email address not found"})
 			return
@@ -124,8 +124,8 @@ func GetMessage(c *gin.Context) {
 	}
 
 	// Check if associated email has expired
-	var email models.TempEmail
-	if err := db.First(&email, message.TempEmailID).Error; err != nil {
+	var email models.EmailAddress
+	if err := db.First(&email, message.EmailID).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Database error"})
 		return
 	}
@@ -166,26 +166,17 @@ func GetAttachment(c *gin.Context) {
 		return
 	}
 
-	// Get attachment with associated message
+	// Get attachment and check email expiration in one query
 	var attachment models.Attachment
-	if err := db.Preload("Message").First(&attachment, attachmentID).Error; err != nil {
+	if err := db.Joins("JOIN messages ON messages.id = attachments.message_id").
+		Joins("JOIN email_addresses ON email_addresses.id = messages.email_id").
+		Where("attachments.id = ? AND email_addresses.expires_at > ?", attachmentID, time.Now()).
+		First(&attachment).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
-			c.JSON(http.StatusNotFound, gin.H{"error": "Attachment not found"})
+			c.JSON(http.StatusGone, gin.H{"error": "Attachment not found or email expired"})
 			return
 		}
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Database error"})
-		return
-	}
-
-	// Check if associated email has expired
-	var email models.TempEmail
-	if err := db.First(&email, attachment.TempEmailID).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Database error"})
-		return
-	}
-
-	if time.Now().After(email.ExpiresAt) {
-		c.JSON(http.StatusGone, gin.H{"error": "Email has expired"})
 		return
 	}
 
