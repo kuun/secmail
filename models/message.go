@@ -17,7 +17,7 @@ type Message struct {
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
 	DeletedAt   gorm.DeletedAt `gorm:"index"`
-	Attachments []Attachment   `gorm:"foreignKey:MessageID"`
+	Attachments []Attachment   `gorm:"foreignKey:MessageID;constraint:OnDelete:CASCADE,OnUpdate:CASCADE;"`
 }
 
 type Attachment struct {

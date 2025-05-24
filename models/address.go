@@ -10,5 +10,5 @@ type EmailAddress struct {
 	gorm.Model
 	Address   string `gorm:"uniqueIndex"`
 	ExpiresAt time.Time
-	Messages  []Message `gorm:"foreignKey:EmailID"`
+	Messages  []Message `gorm:"foreignKey:EmailID;constraint:OnDelete:CASCADE,OnUpdate:CASCADE;"`
 }

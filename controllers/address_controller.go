@@ -10,8 +10,14 @@ import (
 	"secmail/models"
 
 	"github.com/gin-gonic/gin"
+	"github.com/kuun/slog"
 	"gorm.io/gorm"
 )
+
+type _logger struct {
+}
+
+var log = slog.GetLogger(_logger{})
 
 const (
 	emailLength   = 10
@@ -56,7 +62,7 @@ func CreateTempEmail(c *gin.Context) {
 		randomPart := generateRandomString(emailLength)
 		emailAddress := randomPart + "@" + config.GlobalConfig.EmailDomain
 
-		exists = db.Where("email_address = ?", emailAddress).First(&email).Error == nil
+		exists = db.Where("address = ?", emailAddress).First(&email).Error == nil
 		if !exists {
 			email = models.EmailAddress{
 				Address:   emailAddress,
@@ -143,12 +149,14 @@ func DeleteTempEmail(c *gin.Context) {
 	// Delete the email
 	if err := tx.Delete(&email).Error; err != nil {
 		tx.Rollback()
+		log.Errorf("Failed to delete email address: %s, error: %s", email.Address, err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete email"})
 		return
 	}
 
 	// Commit transaction
 	if err := tx.Commit().Error; err != nil {
+		log.Errorf("Failed to commit transaction for email address: %s, error: %s", email.Address, err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to commit transaction"})
 		return
 	}
