@@ -90,7 +90,7 @@ func GetTempEmail(c *gin.Context) {
 	}
 
 	var email models.EmailAddress
-	if err := db.Where("email_address = ?", emailAddress).First(&email).Error; err != nil {
+	if err := db.Where("address = ?", emailAddress).First(&email).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			c.JSON(http.StatusNotFound, gin.H{"error": "Email address not found"})
 			return
@@ -123,7 +123,7 @@ func DeleteTempEmail(c *gin.Context) {
 
 	// Find email
 	var email models.EmailAddress
-	if err := tx.Where("email_address = ?", emailAddress).First(&email).Error; err != nil {
+	if err := tx.Where("address = ?", emailAddress).First(&email).Error; err != nil {
 		tx.Rollback()
 		if err == gorm.ErrRecordNotFound {
 			c.JSON(http.StatusNotFound, gin.H{"error": "Email address not found"})
@@ -134,7 +134,7 @@ func DeleteTempEmail(c *gin.Context) {
 	}
 
 	// Delete associated data (attachments will be deleted by cascade)
-	if err := tx.Where("temp_email_id = ?", email.ID).Delete(&models.Message{}).Error; err != nil {
+	if err := tx.Where("email_id = ?", email.ID).Delete(&models.Message{}).Error; err != nil {
 		tx.Rollback()
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete messages"})
 		return
