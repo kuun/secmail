@@ -75,9 +75,9 @@ func GetMessages(c *gin.Context) {
 	var messages []models.Message
 	var total int64
 
-	db.Model(&models.Message{}).Where("temp_email_id = ?", email.ID).Count(&total)
+	db.Model(&models.Message{}).Where("email_id = ?", email.ID).Count(&total)
 
-	if err := db.Where("temp_email_id = ?", email.ID).
+	if err := db.Where("email_id = ?", email.ID).
 		Order("created_at DESC").
 		Offset(offset).
 		Limit(pageSize).
