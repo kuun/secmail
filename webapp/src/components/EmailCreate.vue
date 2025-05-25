@@ -11,12 +11,43 @@
       </div>
     </Transition>
 
-    <div v-if="!emailStore.address" class="text-center py-8">
-      <p class="text-gray-600 mb-6">Create your security temporary email address instantly</p>
-      <button @click="emailStore.generateEmail"
-        class="bg-blue-600 text-white px-8 py-4 rounded-lg hover:bg-blue-700 transition-colors duration-200 shadow-md">
-        Generate Email Address
-      </button>
+    <div v-if="!emailStore.address" class="space-y-8">
+      <!-- Generate New Email -->
+      <div class="text-center py-4">
+        <p class="text-gray-600 mb-6">Create your security temporary email address instantly</p>
+        <button @click="emailStore.generateEmail"
+          class="w-60 bg-blue-600 text-white px-8 py-4 rounded-lg hover:bg-blue-700 transition-colors duration-200 shadow-md">
+          Generate Email Address
+        </button>
+      </div>
+
+      <!-- Or Divider -->
+      <div class="flex items-center">
+        <div class="flex-1 border-t border-gray-200"></div>
+        <span class="px-4 text-gray-500 text-sm">OR</span>
+        <div class="flex-1 border-t border-gray-200"></div>
+      </div>
+
+      <!-- Access Existing Email -->
+      <div class="space-y-4">
+        <p class="text-center text-gray-600">Access your existing temporary email</p>
+        <form @submit.prevent="accessExistingEmail" class="max-w-lg mx-auto space-y-4">
+          <div>
+            <input type="email" v-model="existingEmail"
+              class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Enter your temporary email address"
+              :class="{ 'border-red-500': showError }"
+            >
+            <p v-if="showError" class="mt-1 text-sm text-red-600">{{ errorMessage }}</p>
+          </div>
+          <div class="text-center">
+            <button type="submit"
+              class="w-60 bg-gray-100 text-gray-800 px-8 py-4 rounded-lg hover:bg-gray-200 transition-colors">
+              Access Inbox
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
 
     <template v-else>
@@ -80,6 +111,48 @@ watch(() => emailStore.address, (newValue) => {
     showSuccess('Email address created successfully!')
   }
 })
+
+const existingEmail = ref('')
+const showError = ref(false)
+const errorMessage = ref('')
+
+const accessExistingEmail = async () => {
+  if (!isValidEmailFormat(existingEmail.value)) {
+    showError.value = true
+    errorMessage.value = 'Invalid email format'
+    return
+  }
+
+  try {
+    // Verify email exists and is valid
+    const response = await fetch(`/api/email/${existingEmail.value}`)
+    if (response.ok) {
+      emailStore.address = existingEmail.value
+      router.push({ name: 'inbox' })
+    } else if (response.status === 410) {
+      showError.value = true
+      errorMessage.value = 'Email has expired'
+    } else {
+      showError.value = true
+      errorMessage.value = 'Email not found'
+    }
+  } catch (error) {
+    showError.value = true
+    errorMessage.value = 'Failed to verify email'
+  }
+}
+
+// Reset error when input changes
+watch(existingEmail, () => {
+  showError.value = false
+  errorMessage.value = ''
+})
+
+const isValidEmailFormat = (email: string) => {
+  // Basic email format validation regex
+  const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  return re.test(email)
+}
 </script>
 
 <style></style>
