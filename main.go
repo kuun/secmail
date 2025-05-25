@@ -9,6 +9,7 @@ import (
 
 	"secmail/config"
 	"secmail/controllers"
+	"secmail/jobs"
 	"secmail/models"
 	"secmail/smtp"
 )
@@ -59,6 +60,9 @@ func main() {
 			log.Printf("SMTP server error: %v", err)
 		}
 	}()
+
+	// Start cleanup job
+	jobs.StartCleanupJob(db)
 
 	r.Run(":8080")
 }
