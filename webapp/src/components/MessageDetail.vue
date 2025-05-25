@@ -6,9 +6,9 @@
         <p class="text-sm text-gray-600">{{ message?.from }}</p>
         <time class="text-xs text-gray-500">{{ formatDate(message?.receivedAt) }}</time>
       </div>
-      <button @click="router.back()"
-        class="text-gray-600 hover:text-gray-800 px-4 py-2 rounded-md border border-gray-200 hover:bg-gray-50">
-        Back
+      <button @click="router.back()" title="Back to Inbox"
+        class="text-gray-600 hover:text-gray-800 p-2 rounded-md border border-gray-200 hover:bg-gray-50">
+        <ArrowUturnLeftIcon class="w-5 h-5" />
       </button>
     </div>
 
@@ -44,6 +44,7 @@ import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useEmailStore } from '../stores/email'
 import { Message } from '../stores/email'
+import { ArrowUturnLeftIcon } from '@heroicons/vue/24/outline'
 
 const route = useRoute()
 const router = useRouter()

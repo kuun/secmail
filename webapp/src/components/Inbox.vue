@@ -6,13 +6,13 @@
         <p class="text-sm text-gray-600 break-all">{{ emailStore.address }}</p>
       </div>
       <div class="flex gap-2 sm:gap-3">
-        <button @click="emailStore.refreshMessages"
-          class="flex-1 sm:flex-none text-blue-600 hover:text-blue-800 px-3 sm:px-4 py-2 rounded-md border border-blue-200 hover:bg-blue-50 text-sm sm:text-base">
-          Refresh
+        <button @click="emailStore.refreshMessages" title="Refresh Messages"
+          class="flex-1 sm:flex-none text-gray-600 hover:text-gray-800 p-2 rounded-md border border-gray-200 hover:bg-gray-50 inline-flex items-center justify-center">
+          <ArrowPathIcon class="w-5 h-5" />
         </button>
-        <button @click="router.push({ name: 'create' })"
-          class="flex-1 sm:flex-none text-gray-600 hover:text-gray-800 px-3 sm:px-4 py-2 rounded-md border border-gray-200 hover:bg-gray-50 text-sm sm:text-base">
-          Back
+        <button @click="router.push({ name: 'create' })" title="Back to Create Email"
+          class="flex-1 sm:flex-none text-gray-600 hover:text-gray-800 p-2 rounded-md border border-gray-200 hover:bg-gray-50 inline-flex items-center justify-center">
+          <ArrowUturnLeftIcon class="w-5 h-5" />
         </button>
       </div>
     </div>
@@ -20,16 +20,18 @@
     <!-- Messages List -->
     <div class="space-y-2">
       <div v-if="loading" class="text-center py-8">
-        <svg class="animate-spin h-8 w-8 text-blue-500 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <svg class="animate-spin h-8 w-8 text-blue-500 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none"
+          viewBox="0 0 24 24">
           <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          <path class="opacity-75" fill="currentColor"
+            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+          </path>
         </svg>
       </div>
       <div v-else-if="emailStore.messages.length === 0" class="text-center py-8 text-gray-500">
         No messages yet
       </div>
-      <div v-else v-for="message in emailStore.messages" :key="message.id"
-        @click="viewMessage(message.id)"
+      <div v-else v-for="message in emailStore.messages" :key="message.id" @click="viewMessage(message.id)"
         class="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
         <div class="flex justify-between items-start">
           <div>
@@ -47,6 +49,7 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useEmailStore } from '../stores/email'
+import { ArrowPathIcon, ArrowUturnLeftIcon } from '@heroicons/vue/24/outline'
 
 const emailStore = useEmailStore()
 const router = useRouter()
