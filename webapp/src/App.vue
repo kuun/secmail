@@ -18,7 +18,19 @@
 
 <script setup lang="ts">
 import AnimatedBackground from './components/AnimatedBackground.vue'
-import { RouterView } from 'vue-router';
+import { RouterView } from 'vue-router'
+import { onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { useEmailStore } from './stores/email'
+
+const router = useRouter()
+const emailStore = useEmailStore()
+
+onMounted(() => {
+  if (emailStore.loadStoredEmail()) {
+    router.push({ name: 'inbox' })
+  }
+})
 </script>
 
 <style scoped>

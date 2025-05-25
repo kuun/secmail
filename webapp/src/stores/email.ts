@@ -2,6 +2,11 @@ import { defineStore } from 'pinia'
 import axios from 'axios'
 import router  from '../router'
 
+interface StoredEmail {
+  address: string
+  expiresAt: string
+}
+
 export interface Message {
   id: string
   from: string
@@ -22,6 +27,39 @@ export const useEmailStore = defineStore('email', {
   }),
 
   actions: {
+    loadStoredEmail() {
+      const stored = localStorage.getItem('tempEmail')
+      if (stored) {
+        const data: StoredEmail = JSON.parse(stored)
+        const expiresAt = new Date(data.expiresAt)
+        // Only restore if not expired
+        if (expiresAt > new Date()) {
+          this.address = data.address
+          this.expiresAt = expiresAt
+          return true
+        } else {
+          localStorage.removeItem('tempEmail')
+        }
+      }
+      return false
+    },
+
+    saveEmail() {
+      if (this.address && this.expiresAt) {
+        const data: StoredEmail = {
+          address: this.address,
+          expiresAt: this.expiresAt.toISOString()
+        }
+        localStorage.setItem('tempEmail', JSON.stringify(data))
+      }
+    },
+
+    setEmail(address: string, expiresAt: Date) {
+      this.address = address
+      this.expiresAt = expiresAt
+      this.saveEmail()
+    },
+
     async generateEmail() {
       const response = await axios.post('/api/email')
       this.address = response.data.address

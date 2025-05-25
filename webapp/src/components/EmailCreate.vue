@@ -105,13 +105,6 @@ const handleCopy = async () => {
   showSuccess('Email address copied to clipboard!')
 }
 
-// Watch for new email creation
-watch(() => emailStore.address, (newValue) => {
-  if (newValue) {
-    showSuccess('Email address created successfully!')
-  }
-})
-
 const existingEmail = ref('')
 const showError = ref(false)
 const errorMessage = ref('')
@@ -127,12 +120,8 @@ const accessExistingEmail = async () => {
     const response = await fetch(`/api/email/${existingEmail.value}`)
     if (response.ok) {
       const data = await response.json()
-      emailStore.address = data.address
-      emailStore.expiresAt = new Date(data.expiresAt)
+      emailStore.setEmail(data.address, new Date(data.expiresAt))
       router.push({ name: 'inbox' })
-    } else if (response.status === 410) {
-      showError.value = true
-      errorMessage.value = 'Email has expired'
     } else {
       showError.value = true
       errorMessage.value = 'Email not found'
@@ -154,6 +143,14 @@ const isValidEmailFormat = (email: string) => {
   const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
   return re.test(email)
 }
+
+// Watch for new email creation
+watch(() => emailStore.address, (newValue) => {
+  if (newValue) {
+    showSuccess('Email address created successfully!')
+    emailStore.saveEmail() // Save newly created email
+  }
+})
 </script>
 
 <style></style>
