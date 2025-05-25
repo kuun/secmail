@@ -34,10 +34,9 @@ func (d *DatabaseConfig) DSN() string {
 }
 
 func InitConfig() error {
-	viper.SetConfigName("config")
+	viper.SetConfigName("secmail")
 	viper.SetConfigType("yaml")
-	viper.AddConfigPath(".")
-	viper.AddConfigPath("./config")
+	viper.AddConfigPath("./etc")
 
 	if err := viper.ReadInConfig(); err != nil {
 		return err

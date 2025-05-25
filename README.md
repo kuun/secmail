@@ -46,8 +46,8 @@ cd secmail
 go mod tidy
 
 # Configure database
-cp config/config.example.yaml config/config.yaml
-# Edit config.yaml with your database credentials
+cp etc/secmail.example.yaml etc/secmail.yaml
+# Edit secmail.yaml with your database credentials
 
 # Start the server
 go run main.go
