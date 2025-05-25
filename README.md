@@ -32,8 +32,8 @@ A secure and easy-to-use temporary email service built with Go and Vue.js.
 ## Setup
 
 ### Prerequisites
-- Go 1.19+
-- Node.js 16+
+- Go 1.23+
+- Node.js 22+
 - PostgreSQL 13+
 
 ### Backend Setup
