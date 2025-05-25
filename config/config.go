@@ -16,8 +16,14 @@ type DatabaseConfig struct {
 }
 
 type SMTPConfig struct {
-	Host string `mapstructure:"host"`
-	Port int    `mapstructure:"port"`
+	Host    string `mapstructure:"host"`
+	Port    int    `mapstructure:"port"`
+	TLSPort int    `mapstructure:"tls_port"`
+	TLS     struct {
+		Enable   bool   `mapstructure:"enable"`
+		CertFile string `mapstructure:"cert_file"`
+		KeyFile  string `mapstructure:"key_file"`
+	} `mapstructure:"tls"`
 }
 
 type Config struct {

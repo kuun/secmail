@@ -2,6 +2,7 @@ package smtp
 
 import (
 	"bytes"
+	"crypto/tls"
 	"fmt"
 	"io"
 
@@ -105,13 +106,8 @@ func (s *Session) Logout() error {
 	return nil
 }
 
-func StartSMTPServer(db *gorm.DB) error {
-	be := NewBackend(db)
+func createSMTPServer(be *Backend) *smtp.Server {
 	s := smtp.NewServer(be)
-
-	s.Addr = fmt.Sprintf("%s:%d",
-		config.GlobalConfig.SMTP.Host,
-		config.GlobalConfig.SMTP.Port)
 	s.Domain = config.GlobalConfig.EmailDomain
 	s.ReadTimeout = 10 * time.Second
 	s.WriteTimeout = 10 * time.Second
@@ -119,6 +115,33 @@ func StartSMTPServer(db *gorm.DB) error {
 	s.MaxRecipients = 1
 	s.AllowInsecureAuth = true
 
-	log.Warnf("Starting SMTP server at %s", s.Addr)
-	return s.ListenAndServe()
+	if config.GlobalConfig.SMTP.TLS.Enable {
+		cert, err := tls.LoadX509KeyPair(
+			config.GlobalConfig.SMTP.TLS.CertFile,
+			config.GlobalConfig.SMTP.TLS.KeyFile,
+		)
+		if err != nil {
+			log.Errorf("Failed to load TLS certificate: %v", err)
+			return nil
+		}
+		s.TLSConfig = &tls.Config{
+			Certificates: []tls.Certificate{cert},
+			MinVersion:   tls.VersionTLS12,
+		}
+	}
+
+	return s
+}
+
+func StartSMTPServer(db *gorm.DB) error {
+	be := NewBackend(db)
+	server := createSMTPServer(be)
+	server.Addr = fmt.Sprintf("%s:%d",
+		config.GlobalConfig.SMTP.Host,
+		config.GlobalConfig.SMTP.Port)
+
+	log.Infof("Starting SMTP server at %s (STARTTLS: %v)",
+		server.Addr,
+		config.GlobalConfig.SMTP.TLS.Enable)
+	return server.ListenAndServe()
 }
