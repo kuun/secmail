@@ -6,13 +6,12 @@
         <h1 class="text-4xl font-bold text-blue-800">SecMail</h1>
         <p class="text-blue-600 mt-2">Secure Temporary Email Service</p>
       </header>
-<!-- 
+
       <router-view v-slot="{ Component }">
         <transition name="fade" mode="out-in">
           <component :is="Component" />
         </transition>
-      </router-view> -->
-      <RouterView/>
+      </router-view>
     </div>
   </div>
 </template>

@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import axios from 'axios'
+import router  from '../router'
 
 export interface Message {
   id: string
@@ -32,10 +33,19 @@ export const useEmailStore = defineStore('email', {
       if (!this.address) return
       try {
         const response = await fetch(`/api/email/${this.address}/messages`)
+        if (!response.ok) {
+          if (response.status === 410) {
+            // Email expired, redirect to create page
+            router.push({ name: 'create' })
+            return
+          }
+          throw new Error('Failed to fetch messages')
+        }
         const data = await response.json()
         this.messages = data.messages
       } catch (error) {
         console.error('Failed to fetch messages:', error)
+        this.messages = []
       }
     },
 
