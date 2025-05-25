@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router'
 import EmailCreate from '../components/EmailCreate.vue'
 import Inbox from '../components/Inbox.vue'
+import MessageDetail from '../components/MessageDetail.vue'
 import { useEmailStore } from '../stores/email'
 
 
@@ -20,6 +21,17 @@ const routes: RouteRecordRaw[] = [
         if (!emailStore.address) {
           return { name: 'create' }
         }
+    }
+  },
+  {
+    path: '/message/:id',
+    name: 'message',
+    component: MessageDetail,
+    beforeEnter: (to, from) => {
+      const emailStore = useEmailStore()
+      if (!emailStore.address) {
+        return { name: 'create' }
+      }
     }
   }
 ]

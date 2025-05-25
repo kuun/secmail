@@ -23,6 +23,7 @@
         No messages yet
       </div>
       <div v-else v-for="message in emailStore.messages" :key="message.id"
+        @click="viewMessage(message.id)"
         class="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
         <div class="flex justify-between items-start">
           <div>
@@ -45,5 +46,9 @@ const router = useRouter()
 
 const formatDate = (date: string) => {
   return new Date(date).toLocaleString()
+}
+
+const viewMessage = (id: string) => {
+  router.push({ name: 'message', params: { id } })
 }
 </script>

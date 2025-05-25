@@ -1,14 +1,14 @@
 import { defineStore } from 'pinia'
 import axios from 'axios'
 
-interface Message {
-  id: number
+export interface Message {
+  id: string
   from: string
   subject: string
   receivedAt: string
   content: string
   htmlContent: string
-  attachments: Array<{id: number, fileName: string}>
+  attachments: Array<{id: string, fileName: string}>
 }
 
 export const useEmailStore = defineStore('email', {
@@ -39,7 +39,7 @@ export const useEmailStore = defineStore('email', {
       }
     },
 
-    async selectMessage(messageId: number) {
+    async selectMessage(messageId: string) {
       const response = await axios.get(`/api/message/${messageId}`)
       this.selectedMessage = response.data
     },
