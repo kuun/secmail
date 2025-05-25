@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+
 	"github.com/spf13/viper"
 )
 
@@ -14,9 +15,15 @@ type DatabaseConfig struct {
 	SSLMode  string `mapstructure:"sslmode"`
 }
 
+type SMTPConfig struct {
+	Host string `mapstructure:"host"`
+	Port int    `mapstructure:"port"`
+}
+
 type Config struct {
 	EmailDomain string         `mapstructure:"email_domain"`
 	Database    DatabaseConfig `mapstructure:"database"`
+	SMTP        SMTPConfig     `mapstructure:"smtp"`
 }
 
 var GlobalConfig Config

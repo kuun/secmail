@@ -1,14 +1,16 @@
 package main
 
 import (
+	"log"
+
 	"github.com/gin-gonic/gin"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 
 	"secmail/config"
 	"secmail/controllers"
-
 	"secmail/models"
+	"secmail/smtp"
 )
 
 // Middleware to inject DB into context
@@ -45,6 +47,13 @@ func main() {
 	r.DELETE("/api/message/:id", controllers.DeleteMessage)
 	r.GET("/api/message/:id/attachment/:attachmentId", controllers.GetAttachment)
 	r.DELETE("/api/email/:id", controllers.DeleteTempEmail)
+
+	// Start SMTP server in a goroutine
+	go func() {
+		if err := smtp.StartSMTPServer(db); err != nil {
+			log.Printf("SMTP server error: %v", err)
+		}
+	}()
 
 	r.Run(":8080")
 }
