@@ -1,17 +1,17 @@
 <template>
-  <div class="bg-white rounded-xl shadow-lg p-8 border border-blue-100">
-    <div class="flex items-center justify-between mb-6">
+  <div class="bg-white rounded-xl shadow-lg p-4 sm:p-8 border border-blue-100">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
       <div>
         <h2 class="text-lg font-semibold text-gray-900">Inbox</h2>
-        <p class="text-sm text-gray-600">{{ emailStore.address }}</p>
+        <p class="text-sm text-gray-600 break-all">{{ emailStore.address }}</p>
       </div>
-      <div class="flex gap-3">
+      <div class="flex gap-2 sm:gap-3">
         <button @click="emailStore.refreshMessages"
-          class="text-blue-600 hover:text-blue-800 px-4 py-2 rounded-md border border-blue-200 hover:bg-blue-50">
+          class="flex-1 sm:flex-none text-blue-600 hover:text-blue-800 px-3 sm:px-4 py-2 rounded-md border border-blue-200 hover:bg-blue-50 text-sm sm:text-base">
           Refresh
         </button>
         <button @click="router.push({ name: 'create' })"
-          class="text-gray-600 hover:text-gray-800 px-4 py-2 rounded-md border border-gray-200 hover:bg-gray-50">
+          class="flex-1 sm:flex-none text-gray-600 hover:text-gray-800 px-3 sm:px-4 py-2 rounded-md border border-gray-200 hover:bg-gray-50 text-sm sm:text-base">
           Back
         </button>
       </div>

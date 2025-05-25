@@ -8,7 +8,7 @@
       </div>
       <button @click="router.back()"
         class="text-gray-600 hover:text-gray-800 px-4 py-2 rounded-md border border-gray-200 hover:bg-gray-50">
-        Back to Inbox
+        Back
       </button>
     </div>
 
