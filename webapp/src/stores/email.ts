@@ -27,17 +27,31 @@ export const useEmailStore = defineStore('email', {
   }),
 
   actions: {
-    loadStoredEmail() {
+    async loadStoredEmail() {
       const stored = localStorage.getItem('tempEmail')
       if (stored) {
         const data: StoredEmail = JSON.parse(stored)
         const expiresAt = new Date(data.expiresAt)
-        // Only restore if not expired
+        
+        // First check local expiration
         if (expiresAt > new Date()) {
-          this.address = data.address
-          this.expiresAt = expiresAt
-          return true
+          try {
+            // Validate with server
+            const response = await axios.get(`/api/email/${data.address}`)
+            if (response.status === 200) {
+              this.address = data.address
+              this.expiresAt = expiresAt
+              return true
+            }
+          } catch (error: any) {
+            if (error.response?.status === 410 || error.response?.status === 404) {
+              // Email has expired on server
+              localStorage.removeItem('tempEmail')
+              router.push({ name: 'create' })
+            }
+          }
         } else {
+          // Locally expired
           localStorage.removeItem('tempEmail')
         }
       }
