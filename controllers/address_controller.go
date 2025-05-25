@@ -53,6 +53,10 @@ func isValidEmailFormat(email string) bool {
 func CreateTempEmail(c *gin.Context) {
 	db := c.MustGet("db").(*gorm.DB)
 
+	// Get client info
+	clientIP := c.ClientIP()
+	userAgent := c.GetHeader("User-Agent")
+
 	// Generate random email address
 	var email models.EmailAddress
 	var exists bool
@@ -65,8 +69,10 @@ func CreateTempEmail(c *gin.Context) {
 		exists = db.Where("address = ?", emailAddress).First(&email).Error == nil
 		if !exists {
 			email = models.EmailAddress{
-				Address:   emailAddress,
-				ExpiresAt: time.Now().Add(emailLifespan),
+				Address:      emailAddress,
+				ExpiresAt:   time.Now().Add(emailLifespan),
+				CreatorIP:   clientIP,
+				CreatorAgent: userAgent,
 			}
 			break
 		}
@@ -143,6 +149,10 @@ func DeleteTempEmail(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Database error"})
 		return
 	}
+
+	// Set client info for audit log
+	email.CreatorIP = c.ClientIP()
+	email.CreatorAgent = c.GetHeader("User-Agent")
 
 	// Delete associated data (attachments will be deleted by cascade)
 	if err := tx.Where("email_id = ?", email.ID).Delete(&models.Message{}).Error; err != nil {

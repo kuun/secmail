@@ -32,7 +32,12 @@ func main() {
 	}
 
 	// Auto migrate models
-	db.AutoMigrate(&models.EmailAddress{}, &models.Message{}, &models.Attachment{})
+	db.AutoMigrate(
+		&models.EmailAddress{},
+		&models.Message{},
+		&models.Attachment{},
+		&models.AuditLog{},
+	)
 
 	r := gin.Default()
 
