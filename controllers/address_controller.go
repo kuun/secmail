@@ -111,7 +111,12 @@ func GetTempEmail(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, email)
+	// email to JSON CreateEmailResponse
+	emailResponse := CreateEmailResponse{
+		Address:   email.Address,
+		ExpiresAt: email.ExpiresAt,
+	}
+	c.JSON(http.StatusOK, emailResponse)
 }
 
 func DeleteTempEmail(c *gin.Context) {

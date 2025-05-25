@@ -124,10 +124,11 @@ const accessExistingEmail = async () => {
   }
 
   try {
-    // Verify email exists and is valid
     const response = await fetch(`/api/email/${existingEmail.value}`)
     if (response.ok) {
-      emailStore.address = existingEmail.value
+      const data = await response.json()
+      emailStore.address = data.address
+      emailStore.expiresAt = new Date(data.expiresAt)
       router.push({ name: 'inbox' })
     } else if (response.status === 410) {
       showError.value = true
