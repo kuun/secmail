@@ -14,7 +14,7 @@ type __logger struct{}
 var log = slog.GetLogger(__logger{})
 
 func CleanupExpiredEmails(db *gorm.DB) {
-	result := db.Where("expires_at < ?", time.Now()).Delete(&models.EmailAddress{})
+	result := db.Where("expires_at < ?", time.Now()).Unscoped().Delete(&models.EmailAddress{})
 	if result.Error != nil {
 		log.Warnf("Failed to cleanup expired emails: %v", result.Error)
 		return
