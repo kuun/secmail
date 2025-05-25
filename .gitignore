@@ -1,3 +1,6 @@
 */node_modules/
 secmail
 etc/secmail.yaml
+certs/smtp.crt
+certs/smtp.key
+# Ignore all files in the certs directory except for the smtp.crt and smtp.key files
